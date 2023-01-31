@@ -1,5 +1,5 @@
-id,name,rgb,is_trans
--1,Unknown,0033B2,f
+id,name,hex,is_trans
+-1,International Klein Blue,0033B2,f
 0,Black,05131D,f
 1,Blue,0055BF,f
 2,Green,237841,f
@@ -133,4 +133,4 @@ id,name,rgb,is_trans
 1005,Trans Fire Yellow,FBE890,t
 1006,Trans Light Royal Blue,B4D4F7,t
 1007,Reddish Lilac,8E5597,f
-9999,[No Color],05131D,f
+9999,No Color,05131D,f

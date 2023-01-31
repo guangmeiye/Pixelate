@@ -1,0 +1,12 @@
+# Python black and flake8 pre-commit hooks
+pip install pre-commit
+pip install flake8
+pip install black
+
+# run after have pre-commit-config.yaml and  .flake8 file
+pre-commit install
+pre-commit run --all-files
+
+
+
+ds_tools[images,J2R]@ git+https://github.com/dskrypa/ds_tools

@@ -11,10 +11,8 @@ coverage.xml
 # Ignore all directories/files under docs/ unless excluded here
 docs/*/
 docs/*.*
-!docs/.nojekyll
 !docs/requirements.txt
-!docs/_ext
-!docs/_templates
+
 # Ignore automatically generated RSTs
 !docs/_src
 docs/_src/*/
