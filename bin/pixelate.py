@@ -1,7 +1,7 @@
 import logging
 import numpy as np
 import pandas as pd
-from PIL import Image
+from PIL import Image, ImageDraw
 from pathlib import Path
 from functools import cached_property
 from typing import Array
@@ -13,12 +13,13 @@ log = logging.getLogger(__name__)
 
 
 LEGO_COLORS = Path('data\colors.csv')
-BRICK_PATH = Path('data\bricks\1x1.png')
 
 
-class pixelate(Command):
-    image_path = Positional(nargs='*', type=Path, help='Paths for image files or directories containing music files.')
-    color = Flag('-C', type=Path , help='Turn the image to black and white.', default=BRICK_PATH)
+class Pixelate:
+    def __init__(self, image_path: Path, brick_size: int, colors: int) -> None:
+        self.image_path = image_path
+        self.brick_size = brick_size
+        self.colors = colors
 
     def main(self):
         rgb_range = list(LegoColorBrick().rgb_range)
@@ -57,7 +58,20 @@ class pixelate(Command):
         return rgb_matrix
 
     #the covert level should be adjustable
+    def render(self):
+        num_rows, num_cols = len(self.rgb_matrix), len(self.rgb_matrix[0])
+        image_width, image_height = num_cols * self.brick_size, num_rows * self.brick_size
+        image = Image.new('RGB', (image_width, image_height), (255, 255, 255))
+        draw = ImageDraw.Draw(image)
 
+        for row in range(num_rows):
+            for col in range(num_cols):
+                brick_id = self.rgb_matrix[row][col]
+                brick_color = self.colors[brick_id]
+                brick_x1, brick_y1 = col * self.brick_size, row * self.brick_size
+                brick_x2, brick_y2 = brick_x1 + self.brick_size, brick_y1 + self.brick_size
+                draw.rectangle((brick_x1, brick_y1, brick_x2, brick_y2), fill=brick_color)
+        return image
 
     #convert 1x1 bricks to the color we want
     def convert_brick_color(self, convert_color: tuple[int, int, int]) ->Image:
@@ -71,7 +85,13 @@ class pixelate(Command):
                 new_image_data.append(item)
         img.putdata(new_image_data)
         return img
+
     # resize the image based on given size
+    def resize_image(self, size):
+        with Image.open(self.image_path) as img:
+            img = img.resize(size)
+        return img
+
     # base plate size: 16*32, 32*32, 24 * 24
 
     #generate new lego picture by bricks
