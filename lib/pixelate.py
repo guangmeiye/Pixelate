@@ -4,10 +4,7 @@ import pandas as pd
 from PIL import Image, ImageDraw
 from pathlib import Path
 from functools import cached_property
-from typing import Array
 
-from cli_command_parser import Command, Positional, main
-from cli_command_parser import Positional, Flag
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +23,8 @@ class Pixelate:
         img = self.convert_image_rgb(rgb_range)
         return self.matrix_to_image(img)
 
-    def load_image(self) ->Image:
-        img = Image.open(self.image_path)
+    def load_image(self, image_path) ->Image:
+        img = Image.open(image_path)
         img = img.convert("RGB")
         return img
 
@@ -39,7 +36,7 @@ class Pixelate:
     def rgb_matrix(self):
         return np.array(self.image)
 
-    def matrix_to_image(self, rgb_matrix: Array) ->Image:
+    def matrix_to_image(self, rgb_matrix) ->Image:
         return Image.fromarray(rgb_matrix)
 
     def closest_color(self, color, rgb_range):
@@ -66,8 +63,10 @@ class Pixelate:
 
         for row in range(num_rows):
             for col in range(num_cols):
-                brick_id = self.rgb_matrix[row][col]
-                brick_color = self.colors[brick_id]
+                brick_color = self.rgb_matrix[row][col]
+                # Todo: add default rbg_range dicts based on the colors paser
+                rgb_range = LegoColorBrick().rgb_range
+                brick_color = self.closest_color(brick_color, rgb_range)
                 brick_x1, brick_y1 = col * self.brick_size, row * self.brick_size
                 brick_x2, brick_y2 = brick_x1 + self.brick_size, brick_y1 + self.brick_size
                 draw.rectangle((brick_x1, brick_y1, brick_x2, brick_y2), fill=brick_color)
@@ -130,10 +129,8 @@ class LegoColorBrick:
             lego_colors[rgb] = ColorBrick(index, row['name'], rgb, row['hex'], row['is_trans'])
         return lego_colors
 
+    @cached_property
     def rgb_range(self):
         # get a range of rgb color
-        pass
-
-
-if __name__ == '__main__':
-    main()
+        print(self.lego_colors)
+        return list(self.lego_colors)
