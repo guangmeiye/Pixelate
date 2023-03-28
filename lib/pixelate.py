@@ -1,6 +1,8 @@
 import logging
+import math
 import numpy as np
 import pandas as pd
+import itertools
 from PIL import Image, ImageDraw
 from pathlib import Path
 from functools import cached_property
@@ -39,13 +41,15 @@ class Pixelate:
     def matrix_to_image(self, rgb_matrix) ->Image:
         return Image.fromarray(rgb_matrix)
 
+    # have problem!!!
     def closest_color(self, color, rgb_range):
         rgb_range = np.array(rgb_range)
         color = np.array(color)
         distances = np.sqrt(np.sum((rgb_range-color)**2,axis=1))
         index_of_smallest = np.where(distances==np.amin(distances))
         smallest_distance = rgb_range[index_of_smallest]
-        return smallest_distance 
+        return tuple(itertools.chain.from_iterable(smallest_distance.tolist()))
+
 
     def convert_image_rgb(self, rgb_range):
         rgb_matrix = self.rgb_matrix.copy()
@@ -68,8 +72,7 @@ class Pixelate:
                 rgb_range = LegoColorBrick().rgb_range
                 brick_color = self.closest_color(brick_color, rgb_range)
                 brick_x1, brick_y1 = col * self.brick_size, row * self.brick_size
-                brick_x2, brick_y2 = brick_x1 + self.brick_size, brick_y1 + self.brick_size
-                draw.rectangle((brick_x1, brick_y1, brick_x2, brick_y2), fill=brick_color)
+                draw.rectangle([(self.brick_size, self.brick_size), (brick_x1, brick_y1)], fill=brick_color)
         return image
 
     #convert 1x1 bricks to the color we want
@@ -114,7 +117,7 @@ class ColorBrick:
         self.is_trans = is_trans
 
 class LegoColorBrick:
-    def lego_colors(self):
+    def raw_lego_colors(self):
         return pd.read_csv('/content/colors.csv')
 
     def hex_to_rgb(self, hex):
@@ -124,7 +127,7 @@ class LegoColorBrick:
     def lego_colors(self):
         # a list of ColorBrick
         lego_colors = {}
-        for index, row in self.lego_colors.iterrows():
+        for index, row in self.raw_lego_colors().iterrows():
             rgb = self.hex_to_rgb(row['hex'])
             lego_colors[rgb] = ColorBrick(index, row['name'], rgb, row['hex'], row['is_trans'])
         return lego_colors
